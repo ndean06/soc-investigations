@@ -19,7 +19,7 @@ During incident review, an anomalous process was identified:
 
 The process name and execution context were inconsistent with expected Windows behavior. Due to limited disk-based indicators, a **memory capture** was collected, prompting a pivot to **volatile memory forensics**.
 
-📸 **Screenshot Placeholder**
+![RWX VAD Region](screenshots/04-rwx-vad.png)
 *Defender alert → incident view → memory capture initiation highlighting `syshost.exe`*
 
 ---
@@ -119,7 +119,7 @@ These files represent mapped memory regions for the target process.
 
 ---
 
-## 6. RWX VAD Extraction Attempt (and Limitation)
+## 6. RWX VAD Extraction Limitations (Volatility 3)
 
 An attempt was made to directly carve the RWX VAD using file offsets.
 
