@@ -84,7 +84,8 @@ vol -c dtb.json windows.pslist.PsList
 
 This confirmed the investigation target and justified deeper analysis.
 
-![Process Enumeration](screenshots/03-pslist-syshost-10272.png)
+![Process Enumeration](screenshots/03-pslist-syshost-10272-1.png)
+![Process Enumeration](screenshots/03-pslist-syshost-10272-2.png)
 *Process listing output highlighting `syshost.exe` (PID 10272) present at capture time*
 
 ---
