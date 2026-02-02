@@ -1,32 +1,52 @@
-# Fileless Process Injection – Memory Forensics Case
+# Fileless Process Injection – Memory Forensics Case  
+**Case ID:** MTS-PC-1-1094
+
+---
 
 ## Overview
-This case documents a **memory-forensics–led investigation** that originated from suspicious endpoint activity and escalated into the identification of **fileless malicious execution**. The investigation centers on an anomalous instance of `syshost.exe` executing from **PAGE_EXECUTE_READWRITE (RWX)** memory, consistent with **process injection and reflective code loading**.
+This case documents a **memory-forensics–led DFIR investigation** initiated after suspicious endpoint activity escalated into repeated **process injection alerts**. The investigation focuses on an anomalous instance of `syshost.exe` executing from **PAGE_EXECUTE_READWRITE (RWX)** memory—behavior consistent with **fileless malware, shellcode injection, and reflective loading techniques**.
 
-The case demonstrates how endpoint context, investigative pivots, and memory analysis were combined to validate in-memory execution **without reliance on disk-based malware artifacts**.
+Disk-based artifacts were limited or absent, requiring a pivot to **volatile memory analysis** to validate malicious execution.
+
+---
+
+## Investigation Request (Initial Context)
+> Memory analysis was requested following a high volume of **process injection detections** on host **MTS-PC-1** on **2026-01-23**.  
+>  
+> The activity was suspected to be related to previously observed malware, a newly executed payload, or both. Due to the severity and fileless nature of the behavior, a **full memory capture** was collected and provided for DFIR analysis.
 
 ---
 
 ## Key Findings
-- Suspicious execution identified within `syshost.exe`
-- RWX memory region confirmed via VAD analysis
-- No reconstructable PE present in RWX VAD (indicative of shellcode or loader code)
-- Memory-backed PE recovered through ImageSectionObject analysis
-- Extracted executable confirmed to be **in-memory only** and not disk-backed
+- Suspicious execution observed within `syshost.exe`
+- **RWX memory region** confirmed via VAD analysis
+- No reconstructable PE present within RWX VAD (indicative of shellcode or loader code)
+- **Memory-backed PE** recovered via ImageSectionObject analysis
+- Extracted executable confirmed to exist **only in memory** (not disk-backed)
 
 ---
 
 ## Technique Classification
-- **Process Injection (T1055)**
-- **Reflective Code Loading (T1620)**
+Mapped to **MITRE ATT&CK**:
+- **T1055 – Process Injection**
+- **T1620 – Reflective Code Loading**
 
 ---
 
-## Contents
-- `walkthrough.md` – End-to-end investigation workflow and analytical decisions  
-- `report.md` – Formal incident report and conclusions  
-- `artifacts/` – Extracted memory artifacts  
-- `screenshots/` – Supporting evidence  
+## Repository Contents
+- `walkthrough.md` – Step-by-step investigative workflow and analytical decisions  
+- `report.md` – Formal DFIR report and conclusions  
+- `artifacts/` – Extracted memory artifacts and hashes  
+- `screenshots/` – Evidence supporting investigative steps  
+
+---
+
+## Analyst Notes
+This case highlights:
+- Memory-first investigation strategies
+- Detection of fileless execution tradecraft
+- Tooling limitations and investigative pivots
+- Practical DFIR workflows used in real SOC environments
 
 ---
 
