@@ -27,15 +27,19 @@ During incident review, an anomalous process was identified:
 The process name and execution context were inconsistent with expected Windows behavior. Due to limited disk-based indicators, a **memory capture** was collected, prompting a pivot to **volatile memory forensics**.
 
 ![Defender Alert and Memory Capture](screenshots/01-defender-incident-memory-capture-1.png)
+
 *Defender alert → incident view → memory capture initiation highlighting `syshost.exe`*
 
 ![Process Execution Timeline](screenshots/01-defender-incident-memory-capture-2.png)
+
 *Defender alert timeline highlighting suspicious process creation events, including `syshost.exe` execution and subsequent file creation consistent with malware staging behavior.*
 
 ![Incident Graph Overview](screenshots/01-defender-incident-memory-capture-3.png)
+
 *Defender incident graph visualizing multi-stage activity associated with `MTS-PC-1`, including processes, files, network connections, and registry artifacts correlated to the incident.*
 
 ![Suspicious Process Details](screenshots/01-defender-incident-memory-capture-4.png)
+
 *Detailed process view for `syshost.exe` (PID 10272) showing execution context, file path, elevated integrity level, malware classification, and MITRE ATT&CK technique mapping.*
 
 ---
@@ -64,6 +68,7 @@ vol -f primary.raw windows.info.Info
 A working configuration file (`dtb.json`) was generated and reused for all subsequent commands.
 
 ![Kernel Context Identification](screenshots/02-windows-info-kernel-context.png)
+
 *Volatility 3 `windows.info.Info` output confirming Windows version, kernel base, DTB, and loaded symbols*
 
 ---
@@ -86,6 +91,7 @@ This confirmed the investigation target and justified deeper analysis.
 
 ![Process Enumeration](screenshots/03-pslist-syshost-10272-1.png)
 ![Process Enumeration](screenshots/03-pslist-syshost-10272-2.png)
+
 *Process listing output highlighting `syshost.exe` (PID 10272) present at capture time*
 
 ---
@@ -115,6 +121,7 @@ RWX memory regions in userland processes are strong indicators of:
 This finding significantly increased confidence of malicious in-memory activity.
 
 ![RWX VAD Region](screenshots/04-rwx-vad.png)
+
 *VAD output showing a PAGE_EXECUTE_READWRITE (RWX) memory region associated with `syshost.exe`*
 
 ---
@@ -135,6 +142,7 @@ vol -c dtb.json -o out windows.memmap.Memmap --pid 10272 --dump
 These files represent mapped memory regions for the target process.
 
 ![Process Memory Dumps](screenshots/05-process-memory-dumps.png)
+
 *Directory listing showing generated process memory dump files for PID 10272*
 
 ---
@@ -229,6 +237,7 @@ sha256sum ImageSectionObject.syshost.exe.img
 This confirmed the presence of a legitimate PE structure existing **only in memory**.
 
 ![Artifact Identification and Hashing](screenshots/08-file-and-hash-validation.png)
+
 *File type identification and cryptographic hashing of the in-memory PE artifact*
 
 ---
