@@ -1,10 +1,17 @@
 # Walkthrough – Fileless Process Injection via Memory Forensics
 
-Case Context
+## Case Context
 
-This walkthrough outlines the investigation used to identify fileless malicious activity through memory analysis. The case began with suspicious endpoint behavior and progressed to process memory analysis when disk-based evidence was limited.
+This walkthrough outlines the investigation used to identify **fileless malicious activity** through memory analysis. The case began with suspicious endpoint behavior and progressed to **process memory analysis** when disk-based evidence was limited.
 
-The focus of this walkthrough is how and why decisions were made at each stage of analysis.
+### Investigation Request
+
+> **Investigation Request (Summary)**
+> On **2026-01-23**, host **MTS-PC-1** generated a high volume of **process injection alerts**, indicating potential fileless or post-exploitation activity. Due to the severity and lack of reliable disk artifacts, a **full memory capture** was acquired and provided for DFIR analysis.
+
+The focus of this walkthrough is **how and why decisions were made** at each stage of analysis.
+
+---
 
 ## 1. Investigation Entry Point
 
@@ -19,14 +26,18 @@ During incident review, an anomalous process was identified:
 
 The process name and execution context were inconsistent with expected Windows behavior. Due to limited disk-based indicators, a **memory capture** was collected, prompting a pivot to **volatile memory forensics**.
 
-![RWX VAD Region](screenshots/04-rwx-vad.png)
+![Defender Alert and Memory Capture](screenshots/01-defender-incident-memory-capture.png)
 *Defender alert → incident view → memory capture initiation highlighting `syshost.exe`*
+
 
 ---
 
 ## 2. Preparing the Memory Image (Volatility 3)
 
 The memory image required proper kernel context before analysis could proceed.
+
+> **Analyst Note – Kernel Context Resolution**
+> Initial execution of `windows.info.Info` did not fully resolve kernel translation and symbols. Kernel context was captured and saved to `dtb.json`, after which Windows plugins executed normally. All subsequent analysis reused this configuration to ensure reliable address translation.
 
 ### Action
 
@@ -44,8 +55,8 @@ vol -f primary.raw windows.info.Info
 
 A working configuration file (`dtb.json`) was generated and reused for all subsequent commands.
 
-📸 **Screenshot Placeholder**
-*Output of `windows.info.Info` showing OS version and kernel details*
+![Kernel Context Identification](screenshots/02-windows-info-kernel-context.png)
+*Volatility 3 `windows.info.Info` output confirming Windows version, kernel base, DTB, and loaded symbols*
 
 ---
 
@@ -65,8 +76,8 @@ vol -c dtb.json windows.pslist.PsList
 
 This confirmed the investigation target and justified deeper analysis.
 
-📸 **Screenshot Placeholder**
-*Process listing output highlighting PID 10272*
+![Process Enumeration](screenshots/03-pslist-syshost-10272.png)
+*Process listing output highlighting `syshost.exe` (PID 10272) present at capture time*
 
 ---
 
@@ -94,8 +105,8 @@ RWX memory regions in userland processes are strong indicators of:
 
 This finding significantly increased confidence of malicious in-memory activity.
 
-📸 **Screenshot Placeholder**
-*VAD output showing PAGE_EXECUTE_READWRITE memory region*
+![RWX VAD Region](screenshots/04-rwx-vad.png)
+*VAD output showing a PAGE_EXECUTE_READWRITE (RWX) memory region associated with `syshost.exe`*
 
 ---
 
@@ -114,12 +125,12 @@ vol -c dtb.json -o out windows.memmap.Memmap --pid 10272 --dump
 
 These files represent mapped memory regions for the target process.
 
-📸 **Screenshot Placeholder**
-*Directory listing showing generated process memory dump files*
+![Process Memory Dumps](screenshots/05-process-memory-dumps.png)
+*Directory listing showing generated process memory dump files for PID 10272*
 
 ---
 
-## 6. RWX VAD Extraction Limitations (Volatility 3)
+## 6. RWX VAD Extraction Attempt (and Limitation)
 
 An attempt was made to directly carve the RWX VAD using file offsets.
 
@@ -131,11 +142,13 @@ Direct carving failed due to:
 * Volatility 3 dumps not being VA-linear
 * No direct VA → file offset mapping
 
+
 ### Conclusion
 
 This behavior is **expected in Volatility 3** and indicates that traditional byte-offset carving is not viable for this scenario.
 
 The failure itself provided evidence that **address-aware extraction** would be required.
+
 
 ---
 
@@ -162,8 +175,8 @@ This strongly suggests the RWX region contained:
 
 This behavior aligns with **fileless execution techniques**.
 
-📸 **Screenshot Placeholder**
-*PEDump output showing no reconstructed PE*
+![PEDump Attempt](screenshots/06-pedump-no-pe.png)
+*PEDump execution showing no reconstructable PE within the RWX memory region*
 
 ---
 
@@ -177,8 +190,8 @@ ImageSectionObject.syshost.exe.img
 
 This artifact represents an executable mapped into memory rather than loaded from disk.
 
-📸 **Screenshot Placeholder**
-*Extracted ImageSectionObject file associated with `syshost.exe`*
+![ImageSectionObject Extraction](screenshots/07-imagesectionobject-syshost.png)
+*Extracted ImageSectionObject file associated with `syshost.exe` loaded directly from memory*
 
 ---
 
@@ -204,8 +217,8 @@ sha256sum ImageSectionObject.syshost.exe.img
 
 This confirmed the presence of a legitimate PE structure existing **only in memory**.
 
-📸 **Screenshot Placeholder**
-*File identification and hashing output*
+![Artifact Identification and Hashing](screenshots/08-file-and-hash-validation.png)
+*File type identification and cryptographic hashing of the in-memory PE artifact*
 
 ---
 
@@ -233,8 +246,8 @@ The executable was:
 * Not disk-backed
 * Consistent with a **manually mapped or reflective loader stub**
 
-📸 **Screenshot Placeholder**
-*pecheck.py output highlighting malformed sections and headers*
+![PE Structural Analysis](screenshots/09-pecheck-malformed-pe.png)
+*`pecheck.py` output highlighting malformed sections and headers consistent with manual PE mapping*
 
 ---
 
