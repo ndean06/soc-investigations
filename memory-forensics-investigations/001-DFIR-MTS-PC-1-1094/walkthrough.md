@@ -26,7 +26,7 @@ During incident review, an anomalous process was identified:
 
 The process name and execution context were inconsistent with expected Windows behavior. Due to limited disk-based indicators, a **memory capture** was collected, prompting a pivot to **volatile memory forensics**.
 
-![Defender Alert and Memory Capture](screenshots/01-defender-incident-memory-capture.png)
+![Defender Alert and Memory Capture](screenshots/01-defender-incident-memory-capture-1.png)
 *Defender alert → incident view → memory capture initiation highlighting `syshost.exe`*
 
 ![Process Execution Timeline](screenshots/01-defender-incident-memory-capture-2.png)
