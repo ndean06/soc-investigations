@@ -185,6 +185,7 @@ This strongly suggests the RWX region contained:
 This behavior aligns with **fileless execution techniques**.
 
 ![PEDump Attempt](screenshots/06-pedump-no-pe.png)
+
 *PEDump execution showing no reconstructable PE within the RWX memory region*
 
 ---
