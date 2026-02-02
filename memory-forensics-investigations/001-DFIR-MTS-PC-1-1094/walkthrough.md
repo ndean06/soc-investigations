@@ -29,6 +29,14 @@ The process name and execution context were inconsistent with expected Windows b
 ![Defender Alert and Memory Capture](screenshots/01-defender-incident-memory-capture.png)
 *Defender alert → incident view → memory capture initiation highlighting `syshost.exe`*
 
+![Process Execution Timeline](screenshots/01-defender-incident-memory-capture-2.png)
+*Defender alert timeline highlighting suspicious process creation events, including `syshost.exe` execution and subsequent file creation consistent with malware staging behavior.*
+
+![Incident Graph Overview](screenshots/01-defender-incident-memory-capture-3.png)
+*Defender incident graph visualizing multi-stage activity associated with `MTS-PC-1`, including processes, files, network connections, and registry artifacts correlated to the incident.*
+
+![Suspicious Process Details](screenshots/01-defender-incident-memory-capture-4.png)
+*Detailed process view for `syshost.exe` (PID 10272) showing execution context, file path, elevated integrity level, malware classification, and MITRE ATT&CK technique mapping.*
 
 ---
 
