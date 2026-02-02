@@ -201,6 +201,7 @@ ImageSectionObject.syshost.exe.img
 This artifact represents an executable mapped into memory rather than loaded from disk.
 
 ![ImageSectionObject Extraction](screenshots/07-imagesectionobject-syshost.png)
+
 *Extracted ImageSectionObject file associated with `syshost.exe` loaded directly from memory*
 
 ---
@@ -256,8 +257,15 @@ The executable was:
 * Not disk-backed
 * Consistent with a **manually mapped or reflective loader stub**
 
-![PE Structural Analysis](screenshots/09-pecheck-malformed-pe.png)
-*`pecheck.py` output highlighting malformed sections and headers consistent with manual PE mapping*
+![PECheck Parsing Warnings](screenshots/09-pecheck-malformed-pe-1.png)
+
+*`pecheck.py` output showing malformed PE structure, including oversized section raw data, invalid file offsets, excessive null bytes, and parsing errors consistent with a manually mapped or truncated in-memory executable.*
+
+![PE Entry Point Outside File](screenshots/09-pecheck-malformed-pe-2.png)
+
+*PE entry point resolution showing execution address mapped in virtual memory (`0x7ff6caa61e78`), with the entry point lying outside the physical file—indicative of in-memory execution rather than disk-backed loading.*
+
+
 
 ---
 
