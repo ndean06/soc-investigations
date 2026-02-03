@@ -141,9 +141,13 @@ vol -c dtb.json -o out windows.memmap.Memmap --pid 10272 --dump
 
 These files represent mapped memory regions for the target process.
 
-![Process Memory Dumps](screenshots/05-process-memory-dumps.png)
+![Process Memory Dumps](screenshots/05-process-memory-dumps-1.png)
 
-*Directory listing showing generated process memory dump files for PID 10272*
+*Directory listing showing multiple process memory dump files (`pid.10272.dmp`, `pid.10272-1.dmp`) created for `syshost.exe` (PID 10272) during Volatility memory extraction.*
+
+![Process Memory Dump Metadata](screenshots/05-process-memory-dumps-2.png)
+
+*File metadata (`stat`) confirming successful creation, size (~925 MB), timestamps, and permissions of the `syshost.exe` process memory dump files, validating full process memory capture for offline analysis.*
 
 ---
 
@@ -174,7 +178,7 @@ The failure itself provided evidence that **address-aware extraction** would be 
 To determine whether the RWX region contained a valid PE:
 
 ```bash
-vol -c dtb.json -o out windows.pedump.PEDump --pid 10272 --base <RWX_START>
+vol -c dtb.json -o out windows.pedump.PEDump --pid 10272 --base 0x17a7ce20000
 ```
 
 ### Result
@@ -194,7 +198,7 @@ This behavior aligns with **fileless execution techniques**.
 
 ![PEDump Attempt](screenshots/06-pedump-no-pe.png)
 
-*PEDump execution showing no reconstructable PE within the RWX memory region*
+*Volatility `vadinfo` output showing an RWX memory region (PAGE_EXECUTE_READWRITE) in `syshost.exe` at virtual address `0x17a7ce20000`. The absence of PE-related structures or file-backed mappings at this address indicates the region contains injected shellcode or loader/staging code rather than a reconstructable Portable Executable.*
 
 ---
 
