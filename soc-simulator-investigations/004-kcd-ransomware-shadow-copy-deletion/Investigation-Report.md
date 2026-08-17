@@ -1,110 +1,29 @@
-# Investigation Report: KCD Ransomware - Shadow Copy Deletion
-
-
-
-## Findings
-
-
-
-Time: 2026-07-05 22:35:31 UTC  
-
-Host: KCD-Web  
-
-Host IP: 172.16.1.7  
-
-Affected User: KCD-Web\\administrator  
-
-Alert Name: KCD - Endpoint - Shadow Copy Deletion  
-
-Suspicious Source IP: 91.99.176.42  
-
-Additional Suspicious IP: 91.238.181.47  
-
-Possible Malware Family: Ransomware / Defender Detection: Ransom:Win64/WannaCrypt.PAGV!MTB  
-
-Filename: Stub.exe  
-
-File Path: C:\\Users\\administrator\\Documents\\2147BE653CE551EC\\x64-Release\\Stub.exe  
-
-SHA256 Hash: 1D7323941B44E77F22DD93701CAE781D330AA26881993B9D2307F1C783AC7CD7  
-
-SHA1 Hash: 40BF54C808F2A2F2AEB000480A36CC117839FA4B  
-
-MD5 Hash: 829BF5971E4808CB5D8ED52BBA328B59  
-
-Ransom Note: DataRecovery.txt  
-
-Ransom Email: ransomhunters2026@gmail.com  
-
-Encrypted Filename Pattern: .\[ransomhunters2026@gmail.com].fDKuxNIx  
-
-Primary Command Observed: vssadmin Delete Shadows /All /Quiet  
-
-Final Determination: True Positive - Ransomware Activity Confirmed  
-
-
-
-## Investigation
-
-
-
-On 2026-07-05 at 22:34:33 UTC, the KCD-Web\\administrator account successfully authenticated to KCD-Web from external IP 91.99.176.42 using NTLM authentication. Shortly after, at 22:35:06 UTC, a suspicious executable named Stub.exe was created in C:\\Users\\administrator\\Documents\\2147BE653CE551EC\\x64-Release\\.
-
-
-
-At 22:35:31 UTC, Stub.exe executed from the administrator Documents directory and launched cmd.exe, which executed vssadmin Delete Shadows /All /Quiet to delete shadow copies. Additional recovery-impairment activity was also observed, including wmic SHADOWCOPY /nointeractive and bcdedit commands to weaken or disable Windows recovery options.
-
-
-
-At 22:35:50 UTC, Stub.exe created DataRecovery.txt ransom notes across multiple user and system-accessible directories on KCD-Web. Encrypted filename artifacts containing \[ransomhunters2026@gmail.com].fDKuxNIx were also observed shortly after execution, supporting ransomware impact. Microsoft Defender later detected the activity as Ransom:Win64/WannaCrypt.PAGV!MTB and quarantined the threat.
-
-
-
-Collection and exfiltration were reviewed through searches for archive/staging behavior, common exfiltration tools, suspicious outbound traffic, and common remote access tools. No confirmed exfiltration, secondary remote access tooling, or exact original encrypted file inventory was identified in the reviewed telemetry.
-
-
-
-## 5W1H
-
-
-
-WHO: The affected account was KCD-Web\\administrator. Successful suspicious access came from 91.99.176.42. IP 91.238.181.47 showed failed RDP attempts but no confirmed successful logon.
-
-
-
-WHAT: Ransomware activity occurred on KCD-Web. Stub.exe executed, impaired recovery, attempted Run key persistence, created DataRecovery.txt ransom notes, and produced encrypted filename artifacts.
-
-
-
-WHEN: Key activity occurred on 2026-07-05 between 22:34:33 UTC and 22:36:13 UTC. Stub.exe executed at 22:35:31 UTC.
-
-
-
-WHERE: Activity occurred on KCD-Web. The payload was located at C:\\Users\\administrator\\Documents\\2147BE653CE551EC\\x64-Release\\Stub.exe.
-
-
-
-WHY: The activity appears intended to impact/encrypt files and prevent recovery.
-
-
-
-HOW: The attacker likely used valid administrator/RDP access from 91.99.176.42. Stub.exe then launched vssadmin, wmic, and bcdedit commands. Defender later detected and quarantined the malware as Ransom:Win64/WannaCrypt.PAGV!MTB.
-
-
-## Recommendations
-
-1. Coordinate emergency containment of KCD-Web. If possible, isolate immediately; if not, restrict access to required services only and restore from a known-good backup as soon as possible.
-
-
-2. Reset KCD-Web\\administrator and rotate any local admin, service, application, backup, or stored credentials exposed on KCD-Web.
-
-
-3. Block 91.99.176.42 and 91.238.181.47 at the perimeter. Treat 91.99.176.42 as the confirmed suspicious access IP.
-
-
-4. Restrict RDP access to KCD-Web using VPN, MFA, and source IP allow-listing.
-
-
-
-5. Confirm Defender remediation, backup integrity, and business impact. Ransomware impact was confirmed, but exfiltration and exact encrypted files were not confirmed.
-
+# IOC Tracker: KCD Ransomware - Shadow Copy Deletion
+
+| IOC Type | Value | Description | Status |
+|---|---|---|---|
+| Host | KCD-Web | Primary impacted host where ransomware activity occurred. | Confirmed |
+| User Account | KCD-Web\administrator | Account used for suspicious successful access and ransomware execution activity. | Confirmed |
+| Source IP | 91.99.176.42 | Confirmed suspicious access IP tied to successful administrator logon and RDP reconnect activity. | Confirmed |
+| Source IP | 91.238.181.47 | High-volume RDP failed authentication source. No successful logon confirmed. | Suspicious |
+| File Name | Stub.exe | Primary suspicious executable associated with ransomware activity. | Confirmed |
+| File Path | C:\Users\administrator\Documents\2147BE653CE551EC\x64-Release\Stub.exe | Full path of the ransomware payload. | Confirmed |
+| SHA256 | 1D7323941B44E77F22DD93701CAE781D330AA26881993B9D2307F1C783AC7CD7 | SHA256 hash tied to Stub.exe. | Confirmed |
+| SHA1 | 40BF54C808F2A2F2AEB000480A36CC117839FA4B | SHA1 hash tied to Stub.exe. | Confirmed |
+| MD5 | 829BF5971E4808CB5D8ED52BBA328B59 | MD5 hash tied to Stub.exe. | Confirmed |
+| Command Line | vssadmin Delete Shadows /All /Quiet | Shadow copy deletion command executed by the ransomware chain. | Confirmed |
+| Command Line | wmic SHADOWCOPY /nointeractive | Additional shadow copy/recovery-related command. | Confirmed |
+| Command Line | bcdedit /set {default} recoveryenabled No | Command used to disable Windows recovery. | Confirmed |
+| Command Line | bcdedit /set {default} bootstatuspolicy ignoreallfailures | Command used to weaken boot failure recovery behavior. | Confirmed |
+| Registry Key | HKCU\Software\Microsoft\Windows\CurrentVersion\Run\F56A2BB52AF4B409 | Run key persistence artifact created by Stub.exe. | Confirmed / Remediated |
+| Ransom Note | DataRecovery.txt | Ransom note created across multiple directories. | Confirmed |
+| Ransom Email | ransomhunters2026@gmail.com | Email address observed in encrypted filename artifacts. | Confirmed |
+| File Pattern | .[ransomhunters2026@gmail.com].fDKuxNIx | Ransomware-style encrypted filename pattern observed in Windows Search index artifacts. | Confirmed |
+| Defender Detection | Ransom:Win64/WannaCrypt.PAGV!MTB | Defender detection associated with Stub.exe and Run key persistence artifact. | Confirmed / Quarantined |
+
+## Notes
+
+- `91.99.176.42` is the confirmed suspicious access IP.
+- `91.238.181.47` generated high-volume RDP failed authentication activity but was not confirmed to have successfully authenticated.
+- Exact original encrypted file paths were not identified in the reviewed telemetry.
+- Collection and exfiltration were reviewed but not confirmed.
