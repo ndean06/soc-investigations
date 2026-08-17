@@ -1,8 +1,8 @@
-\# Investigation Report: KCD Ransomware - Shadow Copy Deletion
+# Investigation Report: KCD Ransomware - Shadow Copy Deletion
 
 
 
-\## Findings
+## Findings
 
 
 
@@ -44,7 +44,7 @@ Final Determination: True Positive - Ransomware Activity Confirmed
 
 
 
-\## Investigation
+## Investigation
 
 
 
@@ -64,7 +64,7 @@ Collection and exfiltration were reviewed through searches for archive/staging b
 
 
 
-\## 5W1H
+## 5W1H
 
 
 
@@ -91,26 +91,20 @@ WHY: The activity appears intended to impact/encrypt files and prevent recovery.
 HOW: The attacker likely used valid administrator/RDP access from 91.99.176.42. Stub.exe then launched vssadmin, wmic, and bcdedit commands. Defender later detected and quarantined the malware as Ransom:Win64/WannaCrypt.PAGV!MTB.
 
 
+## Recommendations
 
-\## Recommendations
-
-
-
-1\. Coordinate emergency containment of KCD-Web. If possible, isolate immediately; if not, restrict access to required services only and restore from a known-good backup as soon as possible.
+1. Coordinate emergency containment of KCD-Web. If possible, isolate immediately; if not, restrict access to required services only and restore from a known-good backup as soon as possible.
 
 
-
-2\. Reset KCD-Web\\administrator and rotate any local admin, service, application, backup, or stored credentials exposed on KCD-Web.
-
+2. Reset KCD-Web\\administrator and rotate any local admin, service, application, backup, or stored credentials exposed on KCD-Web.
 
 
-3\. Block 91.99.176.42 and 91.238.181.47 at the perimeter. Treat 91.99.176.42 as the confirmed suspicious access IP.
+3. Block 91.99.176.42 and 91.238.181.47 at the perimeter. Treat 91.99.176.42 as the confirmed suspicious access IP.
+
+
+4. Restrict RDP access to KCD-Web using VPN, MFA, and source IP allow-listing.
 
 
 
-4\. Restrict RDP access to KCD-Web using VPN, MFA, and source IP allow-listing.
-
-
-
-5\. Confirm Defender remediation, backup integrity, and business impact. Ransomware impact was confirmed, but exfiltration and exact encrypted files were not confirmed.
+5. Confirm Defender remediation, backup integrity, and business impact. Ransomware impact was confirmed, but exfiltration and exact encrypted files were not confirmed.
 

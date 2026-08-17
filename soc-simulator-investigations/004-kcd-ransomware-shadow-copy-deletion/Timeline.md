@@ -1,4 +1,4 @@
-\# Timeline: KCD Ransomware - Shadow Copy Deletion
+# Timeline: KCD Ransomware - Shadow Copy Deletion
 
 
 
