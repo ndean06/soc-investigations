@@ -1,7 +1,6 @@
 # Timeline: KCD Ransomware - Shadow Copy Deletion
 
 
-
 | Timestamp UTC | Event Type | User | Process / IOC | Description | Significance |
 
 |---|---|---|---|---|---|
