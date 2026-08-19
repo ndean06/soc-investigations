@@ -18,6 +18,16 @@ Recommended screenshot folder:
 
 Before adding screenshots to GitHub, screenshots should be cropped to remove browser session URLs, Splunk session links, tokens, credentials, unrelated customer data, or unnecessary raw logs.
 
+Current screenshot naming convention:
+
+```text
+01-alert-shadow-copy-deletion.png
+02-process-chain-stub-cmd-vssadmin.png
+03-stub-exe-payload-path.png
+04-suspicious-rdp-access.png
+07-user-facing-ransom-note.png
+```
+
 ---
 
 ## 1. Alert Review
@@ -35,7 +45,9 @@ Was this a legitimate administrative action or ransomware-related recovery impai
 
 ### Screenshot Evidence
 
-![Shadow copy deletion alert showing vssadmin execution](./screenshots/01-shadow-copy-alert.png)
+![SOC alert showing shadow copy deletion command](./screenshots/01-alert-shadow-copy-deletion.png)
+
+**What this shows:** The original SOC alert showing `vssadmin Delete Shadows /All /Quiet`, which triggered the ransomware investigation.
 
 ---
 
@@ -68,6 +80,8 @@ This shifted the investigation from a single suspicious command to a likely rans
 
 ![Process chain showing Stub.exe launching cmd.exe and vssadmin.exe](./screenshots/02-process-chain-stub-cmd-vssadmin.png)
 
+**What this shows:** The process relationship showing `Stub.exe -> cmd.exe -> vssadmin.exe`, supporting that the shadow copy deletion was launched by the ransomware payload.
+
 ---
 
 ## 4. Payload Review
@@ -95,6 +109,8 @@ Microsoft Defender later detected the threat as:
 
 ![Stub.exe payload path and execution evidence](./screenshots/03-stub-exe-payload-path.png)
 
+**What this shows:** The suspicious `Stub.exe` payload executing from the administrator Documents directory, supporting that this file was the primary ransomware executable in the reviewed telemetry.
+
 ---
 
 ## 5. Access Path Review
@@ -117,6 +133,8 @@ A second IP, `91[.]238[.]181[.]47`, showed high-volume RDP failed-authentication
 
 ![Suspicious administrator RDP access from external IP](./screenshots/04-suspicious-rdp-access.png)
 
+**What this shows:** Successful administrator authentication and RDP-related access from the confirmed suspicious source, supporting the likely access path before ransomware execution.
+
 ---
 
 ## 6. Recovery Impairment Review
@@ -135,7 +153,13 @@ Defense Impairment — `T1490: Inhibit System Recovery`
 
 ### Screenshot Evidence
 
-![Recovery impairment commands showing vssadmin wmic and bcdedit activity](./screenshots/05-recovery-impairment-commands.png)
+![SOC alert showing shadow copy deletion command](./screenshots/01-alert-shadow-copy-deletion.png)
+
+**What this shows:** The alert evidence showing `vssadmin Delete Shadows /All /Quiet`, which supports recovery impairment behavior.
+
+![Process chain showing Stub.exe launching cmd.exe and vssadmin.exe](./screenshots/02-process-chain-stub-cmd-vssadmin.png)
+
+**What this shows:** The process relationship showing `Stub.exe -> cmd.exe -> vssadmin.exe`, supporting that the recovery impairment command was launched by the ransomware payload.
 
 ---
 
@@ -156,9 +180,13 @@ Microsoft Defender later removed the persistence artifact.
 **ATT&CK Mapping:**  
 Persistence — `T1547.001: Registry Run Keys / Startup Folder`
 
+<!-- Optional future screenshot:
 ### Screenshot Evidence
 
 ![Run key persistence artifact pointing back to Stub.exe](./screenshots/06-run-key-persistence.png)
+
+**What this shows:** The HKCU Run key artifact pointing back to the ransomware payload.
+-->
 
 ---
 
@@ -181,7 +209,9 @@ Impact — `T1486: Data Encrypted for Impact`
 
 ### Screenshot Evidence
 
-![Ransom note and ransomware filename pattern evidence](./screenshots/07-ransom-note-and-file-pattern.png)
+![User-facing ransom note displayed after encryption activity](./screenshots/07-user-facing-ransom-note.png)
+
+**What this shows:** The ransom note message the user would have seen, supporting ransomware impact and confirming that the activity went beyond recovery impairment.
 
 ---
 
@@ -195,9 +225,13 @@ Detection name:
 
 This supported the final determination that the alert was not just suspicious administrative activity, but confirmed ransomware activity.
 
+<!-- Optional future screenshot:
 ### Screenshot Evidence
 
 ![Defender detection and quarantine for ransomware](./screenshots/08-defender-detection-quarantine.png)
+
+**What this shows:** Microsoft Defender detecting and quarantining the ransomware payload.
+-->
 
 ---
 
@@ -218,9 +252,13 @@ No confirmed attacker-controlled archive creation, data staging, exfiltration to
 **Conclusion:**  
 Collection and exfiltration were reviewed but not confirmed.
 
+<!-- Optional future screenshot:
 ### Screenshot Evidence
 
 ![Exfiltration review showing no confirmed collection or outbound exfiltration evidence](./screenshots/09-exfil-review-no-confirmed-evidence.png)
+
+**What this shows:** Searches supporting that collection and exfiltration were reviewed but not confirmed.
+-->
 
 ---
 
@@ -236,9 +274,13 @@ After validating the major pivots, the final timeline showed the ransomware sequ
 6. Defender detection and quarantine
 7. Encrypted filename artifacts observed
 
+<!-- Optional future screenshot:
 ### Screenshot Evidence
 
 ![Final event timeline showing ransomware activity sequence](./screenshots/10-final-event-timeline.png)
+
+**What this shows:** The final ordered timeline of suspicious access, payload execution, recovery impairment, impact, and Defender response.
+-->
 
 ---
 
@@ -266,7 +308,7 @@ The strongest evidence included:
 ## Lessons Learned
 
 - Shadow copy deletion should be treated as high-priority when tied to suspicious parent processes.
-- Process ancestry is critical for separating administrative activity from ransomware behavior.
+- Process ancestry is critical for separating legitimate administrative activity from ransomware behavior.
 - Successful logon activity immediately before payload execution can help identify the likely access path.
 - Recovery impairment, persistence, ransom notes, and encrypted filename artifacts together provide strong evidence of ransomware impact.
 - Collection and exfiltration should be reviewed separately and not assumed without supporting evidence.
