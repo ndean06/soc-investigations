@@ -189,7 +189,6 @@ Persistence — `T1547.001: Registry Run Keys / Startup Folder`
 ![Run key persistence artifact pointing back to Stub.exe](./screenshots/06-run-key-persistence.png)
 
 **What this shows:** `Stub.exe` modified an HKU Run key named `F56A2BB52AF4B409`, with the registry value data pointing back to the ransomware payload. Microsoft Defender later removed the same Run key artifact, supporting both the persistence attempt and remediation.
--->
 
 ---
 
