@@ -61,6 +61,14 @@ The first technique considered was:
 
 The alert matched recovery impairment behavior because shadow copies were deleted using `vssadmin`.
 
+MITRE ATT&CK describes `T1490: Inhibit System Recovery` as adversary behavior where built-in recovery features may be disabled or deleted to prevent recovery. The technique specifically includes the use of `vssadmin.exe` to delete volume shadow copies.
+
+### Screenshot Evidence
+
+![MITRE ATT&CK reference for Inhibit System Recovery and vssadmin shadow copy deletion](./screenshots/02a-mitre-inhibit-system-recovery-reference.png)
+
+**What this shows:** The MITRE ATT&CK reference for `T1490: Inhibit System Recovery`, including the use of `vssadmin.exe delete shadows /all /quiet` to delete volume shadow copies. This supports the ATT&CK mapping used for the shadow copy deletion alert.
+
 ---
 
 ## 3. Process Chain Review
@@ -78,7 +86,7 @@ This shifted the investigation from a single suspicious command to a likely rans
 
 ### Screenshot Evidence
 
-![Process chain showing Stub.exe launching cmd.exe and vssadmin.exe](./screenshots/02-process-chain-stub-cmd-vssadmin.png)
+![Process chain showing Stub.exe launching cmd.exe and vssadmin.exe](./screenshots/03-process-chain-stub-cmd-vssadmin.png)
 
 **What this shows:** The process relationship showing `Stub.exe -> cmd.exe -> vssadmin.exe`, supporting that the shadow copy deletion was launched by the ransomware payload.
 
@@ -107,7 +115,7 @@ Microsoft Defender later detected the threat as:
 
 ### Screenshot Evidence
 
-![Stub.exe payload path and execution evidence](./screenshots/03-stub-exe-payload-path.png)
+![Stub.exe payload path and execution evidence](./screenshots/04-stub-exe-payload-path.png)
 
 **What this shows:** The suspicious `Stub.exe` payload executing from the administrator Documents directory, supporting that this file was the primary ransomware executable in the reviewed telemetry.
 
@@ -133,7 +141,7 @@ A second IP, `91[.]238[.]181[.]47`, showed high-volume RDP failed-authentication
 
 ![Suspicious administrator RDP access from external IP](./screenshots/04-suspicious-rdp-access.png)
 
-**What this shows:** Successful administrator authentication and RDP-related access from the confirmed suspicious source, supporting the likely access path before ransomware execution.
+**What this shows:** Successful administrator authentication and RDP-related access from `91[.]99[.]176[.]42` shortly before `Stub.exe` execution. This supports the likely access path into `KCD-Web` before the ransomware activity began.
 
 ---
 
@@ -153,13 +161,9 @@ Defense Impairment — `T1490: Inhibit System Recovery`
 
 ### Screenshot Evidence
 
-![SOC alert showing shadow copy deletion command](./screenshots/01-alert-shadow-copy-deletion.png)
+![Recovery impairment commands showing vssadmin wmic and bcdedit activity](./screenshots/05-recovery-impairment-commands.png)
 
-**What this shows:** The alert evidence showing `vssadmin Delete Shadows /All /Quiet`, which supports recovery impairment behavior.
-
-![Process chain showing Stub.exe launching cmd.exe and vssadmin.exe](./screenshots/02-process-chain-stub-cmd-vssadmin.png)
-
-**What this shows:** The process relationship showing `Stub.exe -> cmd.exe -> vssadmin.exe`, supporting that the recovery impairment command was launched by the ransomware payload.
+**What this shows:** Recovery-disabling commands executed during the ransomware sequence, including shadow copy deletion and Windows recovery configuration changes. The parent process evidence supports that the commands were launched from the `Stub.exe` ransomware chain.
 
 ---
 
@@ -180,12 +184,11 @@ Microsoft Defender later removed the persistence artifact.
 **ATT&CK Mapping:**  
 Persistence — `T1547.001: Registry Run Keys / Startup Folder`
 
-<!-- Optional future screenshot:
 ### Screenshot Evidence
 
 ![Run key persistence artifact pointing back to Stub.exe](./screenshots/06-run-key-persistence.png)
 
-**What this shows:** The HKCU Run key artifact pointing back to the ransomware payload.
+**What this shows:** `Stub.exe` modified an HKU Run key named `F56A2BB52AF4B409`, with the registry value data pointing back to the ransomware payload. Microsoft Defender later removed the same Run key artifact, supporting both the persistence attempt and remediation.
 -->
 
 ---
