@@ -86,9 +86,9 @@ This shifted the investigation from a single suspicious command to a likely rans
 
 ### Screenshot Evidence
 
-![Process chain showing Stub.exe launching cmd.exe and vssadmin.exe](./screenshots/03-process-chain-stub-cmd-vssadmin.png)
+![Process chain showing Stub.exe launching cmd.exe and vssadmin.exe](./screenshots/02-process-chain-stub-cmd-vssadmin.png)
 
-**What this shows:** The process relationship showing `Stub.exe -> cmd.exe -> vssadmin.exe`, supporting that the shadow copy deletion was launched by the ransomware payload.
+**What this shows:** The process relationship showing `Stub.exe -> cmd.exe -> vssadmin.exe`, supporting that the shadow copy deletion command was launched by the ransomware payload rather than normal administrative activity.
 
 ---
 
@@ -115,7 +115,7 @@ Microsoft Defender later detected the threat as:
 
 ### Screenshot Evidence
 
-![Stub.exe payload path and execution evidence](./screenshots/04-stub-exe-payload-path.png)
+![Stub.exe payload path and execution evidence](./screenshots/03-stub-exe-payload-path.png)
 
 **What this shows:** The suspicious `Stub.exe` payload executing from the administrator Documents directory, supporting that this file was the primary ransomware executable in the reviewed telemetry.
 
@@ -228,13 +228,11 @@ Detection name:
 
 This supported the final determination that the alert was not just suspicious administrative activity, but confirmed ransomware activity.
 
-<!-- Optional future screenshot:
 ### Screenshot Evidence
 
-![Defender detection and quarantine for ransomware](./screenshots/08-defender-detection-quarantine.png)
+![Defender detection and quarantine for ransomware](./screenshots/08-defender-detection-quarantine)
 
-**What this shows:** Microsoft Defender detecting and quarantining the ransomware payload.
--->
+**What this shows:** Microsoft Defender detected the malware as `Ransom:Win64/WannaCrypt.PAGV!MTB` and quarantined the threat. The detection details also tie the activity to `Stub.exe` and the related Run key artifact, supporting the final ransomware determination.
 
 ---
 
