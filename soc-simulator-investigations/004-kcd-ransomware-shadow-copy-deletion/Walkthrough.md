@@ -229,7 +229,7 @@ This supported the final determination that the alert was not just suspicious ad
 
 ### Screenshot Evidence
 
-![Defender detection and quarantine for ransomware](./screenshots/08-defender-detection-quarantine)
+![Defender detection and quarantine for ransomware](./screenshots/08-defender-detection-quarantine.png)
 
 **What this shows:** Microsoft Defender detected the malware as `Ransom:Win64/WannaCrypt.PAGV!MTB` and quarantined the threat. The detection details also tie the activity to `Stub.exe` and the related Run key artifact, supporting the final ransomware determination.
 
