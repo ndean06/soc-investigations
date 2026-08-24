@@ -10,24 +10,6 @@ The goal of this investigation was to determine whether the shadow copy deletion
 
 Screenshots are included throughout this walkthrough to support the investigation steps and show the analyst workflow from alert review through final determination.
 
-Recommended screenshot folder:
-
-```text
-./screenshots/
-```
-
-Before adding screenshots to GitHub, screenshots should be cropped to remove browser session URLs, Splunk session links, tokens, credentials, unrelated customer data, or unnecessary raw logs.
-
-Current screenshot naming convention:
-
-```text
-01-alert-shadow-copy-deletion.png
-02-process-chain-stub-cmd-vssadmin.png
-03-stub-exe-payload-path.png
-04-suspicious-rdp-access.png
-07-user-facing-ransom-note.png
-```
-
 ---
 
 ## 1. Alert Review
