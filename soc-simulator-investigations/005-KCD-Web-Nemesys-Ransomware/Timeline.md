@@ -1,7 +1,41 @@
-# Timeline: 
-
+# Timeline: KCD-Web Nemesys Ransomware
 
 | Timestamp UTC | Event Type | User | Process / IOC | Description | Significance |
-
 |---|---|---|---|---|---|
+| 2026-04-01 18:09:54 | Successful Logon | KCD-Web\\receptionist | 141.98.83.86 | The `receptionist` account successfully authenticated to KCD-Web from external IP `141.98.83.86` following suspicious authentication activity. | Supports suspected valid-account access shortly before attacker tooling was staged. |
+| 2026-04-01 18:12:43 | Tool Staging | KCD-Web\\receptionist | automim1 | Files associated with the `automim1` toolkit were created under `C:\\Users\\receptionist\\Videos\\automim1\\automim1\\`. | Establishes attacker tooling staging prior to ransomware execution. |
+| 2026-04-01 18:12:43 | Credential Tool Staging | KCD-Web\\receptionist | LaZagne | `lazagne.exe` and `lazagne.bat` were created within the `automim1` directory. | Credential-access tooling was staged on the compromised host. |
+| 2026-04-01 18:12:44 | Credential Tool Staging | KCD-Web\\receptionist | mimikatz.exe | Mimikatz binaries, `mimidrv.sys`, and supporting files were created under the `automim1\\mimikatz` directory. | Confirms Mimikatz was staged for credential-access activity. |
+| 2026-04-01 18:12:53 | Credential Dumping | KCD-Web\\receptionist | mimikatz.exe | Mimikatz executed with `privilege::debug`, `sekurlsa::logonPasswords`, `token::elevate`, and `lsadump::sam`, logging output to `Result.txt`. | Confirms active LSASS and SAM credential-dumping activity. |
+| 2026-04-01 18:13:08 | Credential Output Parsing | KCD-Web\\receptionist | miparser.vbs | `wscript.exe` executed `miparser.vbs` against Mimikatz `Result.txt` output. | Indicates automated processing of collected credential information. |
+| 2026-04-01 18:13:09 | Credential Access | KCD-Web\\receptionist | lazagne.exe / reg.exe | LaZagne spawned `cmd.exe` and `reg.exe save` commands targeting the SAM, SYSTEM, and SECURITY registry hives. | Additional credential-dumping activity targeted locally stored credential material. |
+| 2026-04-01 18:13:12 | Credential Review | KCD-Web\\receptionist | Passwords.txt | `notepad.exe` opened `Passwords.txt` from the `automim1\\!logs` directory. | Indicates collected password results were reviewed interactively. |
+| 2026-04-01 18:13:16 | Credential Review | KCD-Web\\receptionist | NTLM.txt | `notepad.exe` opened `NTLM.txt`. | Indicates collected NTLM credential/hash results were reviewed. |
+| 2026-04-01 18:13:58 | Credential Review | KCD-Web\\receptionist | Result.txt | `notepad.exe` opened the raw Mimikatz `Result.txt` output. | Shows the credential dump output was directly reviewed before ransomware execution. |
+| 2026-04-01 18:14:42 | Ransomware Execution | KCD-Web\\receptionist | nemesys.exe | `explorer.exe` launched `C:\\Users\\receptionist\\Videos\\nemesys.exe`. | Primary observed Nemesys ransomware execution. |
+| 2026-04-01 18:14:43 | Payload Extraction | KCD-Web\\receptionist | 7za.exe | `nemesys.exe` used `7za.exe` to extract supporting components from the temporary `7ZipSfx.000` directory. | Begins ransomware payload extraction and staging. |
+| 2026-04-01 18:14:44 | Malware Staging | KCD-Web\\receptionist | nemesys.exe / DC.exe / Everything.exe | Ransomware components were copied into `C:\\Users\\receptionist\\AppData\\Local\\1A0E4D54-2869-FFA5-37FD-1DF75A0FC5BA\\`. | Establishes the primary ransomware working/staging directory. |
+| 2026-04-01 18:14:44 | Persistence | KCD-Web\\receptionist | Registry Run Key | `nemesys.exe` created a Run registry entry under the receptionist user hive. | Confirms persistence was established for the ransomware. |
+| 2026-04-01 18:14:45 | Malware Re-Execution | KCD-Web\\receptionist | dllhost.exe → nemesys.exe | `dllhost.exe` launched the staged AppData copy of `nemesys.exe`. | Shows the ransomware continued execution from its working directory. |
+| 2026-04-01 18:14:46 | File Discovery | KCD-Web\\receptionist | Everything.exe -startup | `nemesys.exe` launched `Everything.exe` with the `-startup` parameter. | Supports rapid file indexing and discovery during ransomware operations. |
+| 2026-04-01 18:14:46 | Defense Impairment | KCD-Web\\receptionist | DC.exe /D | `nemesys.exe` launched `cmd.exe`, which executed `DC.exe /D`. | Initiates Microsoft Defender impairment activity. |
+| 2026-04-01 18:14:46 | Process Interference | KCD-Web\\receptionist | IFEO Debugger Keys | `nemesys.exe` created numerous Image File Execution Options `Debugger` registry entries targeting Windows, monitoring, backup, database, and administrative executables. | Supports deliberate interference with security, recovery, and administrative processes. |
+| 2026-04-01 18:14:46 | Recovery Impairment | KCD-Web\\receptionist | VSS Registry Configuration | `nemesys.exe` modified VSS-related service configuration. | Indicates ransomware preparation to weaken recovery capability. |
+| 2026-04-01 18:14:47 | VM / Disk Disruption | KCD-Web\\receptionist | powershell.exe | `nemesys.exe` launched PowerShell with `ExecutionPolicy Bypass` to dismount disk images and stop virtual machines. | Supports ransomware impact and recovery-disruption behavior. |
+| 2026-04-01 18:14:47 | Administrative Tool Impairment | KCD-Web\\receptionist | taskmgr.exe / taskkill.exe / shutdown.exe | Additional IFEO Debugger modifications targeted administrative utilities including Task Manager, TaskKill, PerfMon, shutdown, and logoff. | Could interfere with administrator response and malware termination. |
+| 2026-04-01 18:14:54 | Defender Policy Modification | KCD-Web\\receptionist | DisableAntiSpyware | `DC.exe` modified `HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows Defender\\DisableAntiSpyware`. | Strong evidence of deliberate Microsoft Defender impairment. |
+| 2026-04-01 18:14:54 | Local Policy Modification | KCD-Web\\receptionist | Registry.pol | `DC.exe` created or modified `C:\\Windows\\System32\\GroupPolicy\\Machine\\Registry.pol`. | Supports local policy changes associated with Defender impairment. |
+| 2026-04-01 18:14:55 | Defender Policy Processing | NT AUTHORITY\\SYSTEM | svchost.exe | SYSTEM-context `svchost.exe` activity referenced the modified `DisableAntiSpyware` policy. | Indicates Windows processed the Defender policy modification. |
+| 2026-04-01 18:14:56 | Batch Script Execution | KCD-Web\\receptionist | 7ZSfx000.cmd | `nemesys.exe` launched `cmd.exe` to execute the temporary `7ZSfx000.cmd` script. | Confirms additional ransomware orchestration through the extracted SFX script. |
+| 2026-04-01 18:14:56 | Ransom Note Display | KCD-Web\\receptionist | Info_to_decrypt_nemesys.txt | `notepad.exe` opened `C:\\Info_to_decrypt_nemesys.txt`. | Confirms ransom-note deployment on the affected host. |
+| 2026-04-01 18:14:57 | File Association Modification | KCD-Web\\receptionist | HKCR\\mimicfile\\shell\\open\\command | `nemesys.exe` modified the `mimicfile` shell open command to reference the ransom note. | Supports ransomware-specific file association and ransom-note behavior. |
+| 2026-04-01 18:14:57 | Defender Service Activity | NT AUTHORITY\\SYSTEM | MpDefenderCoreService.exe | Defender core service activity occurred during the Defender impairment sequence. | Shows Defender-related service activity while anti-security changes were being applied. |
+| 2026-04-01 18:14:58 | SYSTEM-Level Execution | NT AUTHORITY\\SYSTEM | DC.exe /SYS 1 | `DC.exe` executed under `NT AUTHORITY\\SYSTEM` using the `/SYS 1` parameter. | Confirms ransomware-associated defense impairment tooling achieved SYSTEM-level execution. |
+| 2026-04-01 18:14:58 | Temporary File Creation | NT AUTHORITY\\SYSTEM | aut56C7.tmp | SYSTEM-context `DC.exe` created `C:\\Windows\\Temp\\aut56C7.tmp`. | Supports continued elevated DC.exe operational activity. |
+| 2026-04-01 18:14:59 | Temporary File Creation | NT AUTHORITY\\SYSTEM | mvgsjqu | SYSTEM-context `DC.exe` created `C:\\Windows\\Temp\\mvgsjqu`. | Additional elevated artifact associated with the Defender impairment sequence. |
 
+## Timeline Conclusion
+
+The timeline shows a progression from suspicious account access to attacker tooling deployment, credential dumping, credential review, ransomware execution, persistence, file discovery, defense impairment, recovery disruption, and ransom-note deployment.
+
+The ransomware execution chain on `KCD-Web` is confirmed. However, the reviewed telemetry did not provide sufficient evidence to conclusively confirm widespread file encryption or propagation to additional hosts.
