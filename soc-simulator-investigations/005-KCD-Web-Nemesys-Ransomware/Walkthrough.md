@@ -66,17 +66,11 @@ What process created or displayed the ransom note?
 
 ## 3. Ransom Note Process Review
 
-The investigation searched endpoint telemetry for:
+The investigation searched endpoint telemetry for: `Info_to_decrypt_nemesys.txt`
 
-`Info_to_decrypt_nemesys.txt`
+At approximately `18:14:56 UTC`, `notepad.exe` opened: `C:\Info_to_decrypt_nemesys.txt`
 
-At approximately `18:14:56 UTC`, `notepad.exe` opened:
-
-`C:\Info_to_decrypt_nemesys.txt`
-
-Suspicious `nemesys.exe` activity was observed during the same execution window.
-
-This provided the first process-level pivot away from the ransom note.
+Suspicious `nemesys.exe` activity was observed during the same execution window.  This provided the first process-level pivot away from the ransom note.
 
 **Key finding:**  
 `nemesys.exe` became the primary executable of interest.
@@ -93,17 +87,9 @@ This provided the first process-level pivot away from the ransom note.
 
 The investigation pivoted to `nemesys.exe` to determine whether the executable was actually launched.
 
-At approximately `18:14:42 UTC`, the following process relationship was identified:
+At approximately `18:14:42 UTC`, the following process relationship was identified: `explorer.exe -> nemesys.exe`
 
-`explorer.exe -> nemesys.exe`
-
-The executable was launched from:
-
-`C:\Users\receptionist\Videos\nemesys.exe`
-
-under:
-
-`KCD-Web\receptionist`
+The executable was launched from: `C:\Users\receptionist\Videos\nemesys.exe` under: `KCD-Web\receptionist`
 
 **Key finding:**  
 `nemesys.exe` was executed within the receptionist user's interactive session.
