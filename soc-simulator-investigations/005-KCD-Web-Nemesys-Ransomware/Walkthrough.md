@@ -277,21 +277,31 @@ Nemesys extracted and staged supporting components within a randomly named AppDa
 
 ## 10. Persistence Review
 
-The investigation reviewed registry activity associated with `nemesys.exe`.
+After identifying the Nemesys staging directory, the investigation reviewed registry activity to determine whether the ransomware established persistence.
 
-A Registry Run entry was created under the receptionist user's hive.
+At `18:14:44 UTC`, a Nemesys-related payload modified the following Registry Run location:
+
+`HKU\...\Software\Microsoft\Windows\CurrentVersion\Run\nemesys`
+
+The registry value pointed to the staged ransomware executable:
+
+`C:\Users\receptionist\AppData\Local\1A0E4D54-2869-FFA5-37FD-1DF75A0FC5BA\nemesys.exe`
+
+This provided a mechanism for the ransomware to execute again when the affected user logged on.
 
 **ATT&CK Mapping:**  
 Persistence — `T1547.001: Registry Run Keys / Startup Folder`
 
 **Key finding:**  
-Nemesys established a mechanism to execute again when the user logged on.
+The Nemesys ransomware chain established user-level Run key persistence pointing back to the staged AppData copy of `nemesys.exe`.
 
 ### Screenshot Evidence
 
 ![Nemesys Registry Run persistence](./screenshots/10-nemesys-run-persistence.png)
 
-**What this shows:** Registry telemetry showing the Run key created by `nemesys.exe`.
+**What this shows:** Sysmon registry telemetry showing a Nemesys-related payload creating the `CurrentVersion\Run\nemesys` value at `18:14:44 UTC`. The value data points to the staged `nemesys.exe` within the randomly named AppData working directory, confirming persistence through user logon.
+
+---
 
 ---
 
@@ -318,19 +328,19 @@ Discovery — `T1083: File and Directory Discovery`
 
 ## 12. Defender Impairment Review
 
-The investigation identified:
+The investigation identified activity associated with `DC.exe`, a tool used during the Nemesys execution chain to impair Microsoft Defender.
 
-`cmd.exe /c DC.exe /D`
-
-`DC.exe` modified:
+At approximately `18:14:54 UTC`, `DC.exe` modified:
 
 `HKLM\SOFTWARE\Policies\Microsoft\Windows Defender\DisableAntiSpyware`
 
-The value was set to:
+The registry value was set to:
 
 `DWORD 1`
 
-Later, `DC.exe` executed as:
+This modification was consistent with an attempt to disable or weaken Microsoft Defender protections.
+
+Later, `DC.exe` executed under:
 
 `NT AUTHORITY\SYSTEM`
 
@@ -338,17 +348,26 @@ using:
 
 `DC.exe /SYS 1`
 
+This showed that the defense-impairment activity continued under an elevated SYSTEM context.
+
 **ATT&CK Mapping:**  
 Defense Impairment — `T1562.001: Impair Defenses`
 
 **Key finding:**  
-The ransomware toolchain deliberately attempted to impair Microsoft Defender and later executed the defense-impairment tool under SYSTEM privileges.
+The Nemesys toolchain modified Microsoft Defender policy settings and later executed `DC.exe` under SYSTEM privileges, confirming deliberate defense-impairment activity.
 
-### Screenshot Evidence
+### Screenshot Evidence — Defender Policy Modification
 
-![DC.exe Defender impairment and SYSTEM execution](./screenshots/12-defender-impairment.png)
+![DC.exe Defender policy modification](./screenshots/12a-defender-policy-modification.png)
 
-**What this shows:** Registry and process telemetry showing Defender policy modification and subsequent SYSTEM-level `DC.exe` execution.
+**What this shows:** Registry telemetry showing `DC.exe` modifying the Microsoft Defender `DisableAntiSpyware` policy and setting the value to `DWORD 1`, supporting deliberate impairment of endpoint security protections.
+
+### Screenshot Evidence — SYSTEM-Level Execution
+
+![DC.exe SYSTEM-level execution](./screenshots/12b-dc-system-execution.png)
+
+**What this shows:** Process telemetry showing `DC.exe` executing as `NT AUTHORITY\SYSTEM` using the `/SYS 1` parameter, confirming elevated execution during the defense-impairment sequence.
+
 
 ---
 
@@ -373,10 +392,9 @@ Persistence — `T1546.012: Image File Execution Options Injection`
 
 ### Screenshot Evidence
 
-![Nemesys IFEO Debugger registry modifications](./screenshots/13-ifeo-debugger-modifications.png)
+![Representative IFEO Debugger modifications](./screenshots/13-ifeo-debugger-modifications.png)
 
-**What this shows:** Registry telemetry showing Nemesys creating IFEO Debugger entries targeting monitoring, administrative, database, and backup-related executables.
-
+**What this shows:** Representative IFEO `Debugger` registry modifications targeting security monitoring, administrative, database, and backup-related executables. The targeted processes were redirected to `C:\Windows\System32\Systray.exe`. A total of 84 IFEO-related process targets were identified during the ransomware activity.
 ---
 
 ## 14. Recovery and VM Disruption Review
