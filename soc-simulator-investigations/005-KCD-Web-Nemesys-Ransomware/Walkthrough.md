@@ -211,28 +211,38 @@ Credential information was not only dumped but subsequently parsed and reviewed.
 
 ## 8. Access Path Review
 
-With credential-access activity confirmed, the investigation moved further backward to determine how the attacker initially accessed `KCD-Web`.
+With credential-access activity confirmed, the investigation moved further backward to determine how the attacker accessed `KCD-Web`.
 
-Authentication telemetry showed repeated failed logon attempts involving the `receptionist` account.
-
-Suspicious authentication activity associated with:
+Authentication telemetry identified successful logons involving the `receptionist` account from external IP:
 
 `141[.]98[.]83[.]86`
 
-was identified before the credential-access and ransomware activity.
+At `18:09:44 UTC` and `18:09:54 UTC`, Windows Security Event ID `4624` recorded successful Logon Type `3` authentications involving the `receptionist` account from `141[.]98[.]83[.]86`.
+
+At `18:09:56 UTC`, Event ID `4778` recorded an RDP session reconnect involving the `receptionist` account.
+
+Additional session activity was observed at `18:09:58 UTC`, including Event ID `4624` with Logon Type `7`.
+
+This activity occurred approximately three minutes before Mimikatz credential dumping began at `18:12:53 UTC` and approximately five minutes before `nemesys.exe` executed at `18:14:42 UTC`.
 
 **ATT&CK Mapping:**  
-Initial Access — `T1110: Brute Force`  
+Initial Access — `T1133: External Remote Services`  
 Initial Access — `T1078: Valid Accounts`
 
 **Key finding:**  
-The authentication activity supported a suspected brute-force/valid-account access path involving the receptionist account.
+Successful external authentication and RDP-related session activity involving the `receptionist` account from `141[.]98[.]83[.]86` immediately preceded credential dumping and ransomware execution, strongly supporting this IP as the attacker access path.
 
 ### Screenshot Evidence
 
-![Suspicious authentication activity against receptionist account](./screenshots/08-suspicious-authentication.png)
+![Suspicious external access to KCD-Web](./screenshots/08-suspicious-authentication.png)
 
-**What this shows:** Failed and successful authentication activity reviewed to establish the suspected access path before attacker tooling appeared.
+**What this shows:** Windows authentication telemetry showing successful `receptionist` logons from external IP `141[.]98[.]83[.]86`, followed by RDP-related session activity shortly before Mimikatz credential dumping and Nemesys ransomware execution.
+
+### Additional Authentication Scoping Evidence
+
+![High-volume failed and successful authentication activity](./screenshots/08a-auth-failures-and-success-summary.png)
+
+**What this shows:** Authentication scoping identified a high volume of failed logons from `146.70.181.38`, along with `4624` successful logon activity from the same source IP. This pattern is suspicious and may be consistent with password spraying or brute-force behavior.
 
 ---
 
