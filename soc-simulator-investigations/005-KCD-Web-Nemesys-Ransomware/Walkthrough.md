@@ -17,7 +17,7 @@ The note stated:
 
 The message demanded payment in Bitcoin and provided instructions for contacting the attacker to recover encrypted files. This immediately suggested ransomware impact activity.
 
-####**Initial question:**  
+#### Initial question:  
 Were files actually encrypted, and what process was responsible for the ransomware activity?
 
 ### Impact - Ransom Note
