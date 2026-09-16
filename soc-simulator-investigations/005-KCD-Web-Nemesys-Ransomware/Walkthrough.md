@@ -6,11 +6,6 @@ The goal of this investigation was to determine whether the ransomware activity 
 
 ---
 
-## Screenshot Evidence Guide
-
-Screenshots are included throughout this walkthrough to support the investigation steps and show the analyst workflow from the initial ransomware alert through final determination.
-
----
 
 ## 1. Alert Review
 
@@ -27,7 +22,7 @@ This immediately suggested ransomware impact activity.
 **Initial question:**  
 Were files actually encrypted, and what process was responsible for the ransomware activity?
 
-### Screenshot Evidence
+### Impact - Ransom Note
 
 ![Nemesys ransomware note displayed on KCD-Web](./screenshots/01-nemesys-ransom-note.png)
 
@@ -56,7 +51,7 @@ Because the investigation began near the end of the attack chain, the next step 
 **Next question:**  
 What process created or displayed the ransom note?
 
-### Screenshot Evidence
+### ATT&CK Reference - Suspected Data Encrypted for Impact (T1486)
 
 ![MITRE ATT&CK reference for Data Encrypted for Impact](./screenshots/02-mitre-data-encrypted-impact.png)
 
@@ -75,7 +70,7 @@ Suspicious `nemesys.exe` activity was observed during the same execution window.
 **Key finding:**  
 `nemesys.exe` became the primary executable of interest.
 
-### Screenshot Evidence
+### Process Correlation - Ransom Note and Nemesys Activity
 
 ![Process activity surrounding the Nemesys ransom note](./screenshots/03-ransom-note-process-review.png)
 
@@ -94,7 +89,7 @@ The executable was launched from: `C:\Users\receptionist\Videos\nemesys.exe` und
 **Key finding:**  
 `nemesys.exe` was executed within the receptionist user's interactive session.
 
-### Screenshot Evidence
+### Execution - Nemesys Launched from the Receptionist Profile
 
 ![Nemesys execution from receptionist Videos directory](./screenshots/04-nemesys-execution.png)
 
@@ -136,7 +131,7 @@ This significantly expanded the investigation beyond ransomware execution.
 **Key finding:**  
 Credential-access activity preceded `nemesys.exe` execution and provided the next major investigation pivot.
 
-### Screenshot Evidence
+### Credential Access - Mimikatz Activity Before Ransomware Execution
 
 ![Credential access activity preceding Nemesys execution](./screenshots/05-pre-execution-credential-activity.png)
 
@@ -174,7 +169,7 @@ Credential Access — `T1003.002: OS Credential Dumping: Security Account Manage
 **Key finding:**  
 Credential dumping was confirmed rather than merely attempted through tool staging.
 
-### Screenshot Evidence
+### Credential Access - Mimikatz LSASS and SAM Dumping
 
 ![Mimikatz credential dumping command line](./screenshots/06-mimikatz-credential-dumping.png)
 
@@ -201,7 +196,7 @@ The files were viewed using `notepad.exe`.
 **Key finding:**  
 Credential information was not only dumped but subsequently parsed and reviewed.
 
-### Screenshot Evidence
+### Credential Access - Credential Output Parsing and Review
 
 ![Credential output parsing and review](./screenshots/07-credential-output-review.png)
 
@@ -232,7 +227,7 @@ Initial Access — `T1078: Valid Accounts`
 **Key finding:**  
 Successful external authentication and RDP-related session activity involving the `receptionist` account from `141[.]98[.]83[.]86` immediately preceded credential dumping and ransomware execution, strongly supporting this IP as the attacker access path.
 
-### Screenshot Evidence
+### Authentication Scoping - Failed and Successful Logons
 
 ![Suspicious external access to KCD-Web](./screenshots/08-suspicious-authentication.png)
 
@@ -267,7 +262,7 @@ Notable files included:
 **Key finding:**  
 Nemesys extracted and staged supporting components within a randomly named AppData working directory.
 
-### Screenshot Evidence
+### Payload Staging - 7-Zip Extraction and AppData Components
 
 ![Nemesys payload extraction and staging](./screenshots/09-nemesys-payload-staging.png)
 
@@ -295,7 +290,7 @@ Persistence — `T1547.001: Registry Run Keys / Startup Folder`
 **Key finding:**  
 The Nemesys ransomware chain established user-level Run key persistence pointing back to the staged AppData copy of `nemesys.exe`.
 
-### Screenshot Evidence
+### Persistence - Registry Run Key (T1547.001)
 
 ![Nemesys Registry Run persistence](./screenshots/10-nemesys-run-persistence.png)
 
@@ -318,7 +313,8 @@ Within the context of the ransomware execution chain, this activity was consiste
 **ATT&CK Mapping:**  
 Discovery — `T1083: File and Directory Discovery`
 
-### Screenshot Evidence
+### Discovery - File and Directory Discovery (T1083)
+
 
 ![Everything.exe file discovery activity](./screenshots/11-everything-file-discovery.png)
 
@@ -356,18 +352,18 @@ Defense Impairment — `T1562.001: Impair Defenses`
 **Key finding:**  
 The Nemesys toolchain modified Microsoft Defender policy settings and later executed `DC.exe` under SYSTEM privileges, confirming deliberate defense-impairment activity.
 
-### Screenshot Evidence — Defender Policy Modification
+
+### Defense Impairment - Defender Policy Modification
 
 ![DC.exe Defender policy modification](./screenshots/12a-defender-policy-modification.png)
 
 **What this shows:** Registry telemetry showing `DC.exe` modifying the Microsoft Defender `DisableAntiSpyware` policy and setting the value to `DWORD 1`, supporting deliberate impairment of endpoint security protections.
 
-### Screenshot Evidence — SYSTEM-Level Execution
 
+### Defense Impairment - DC.exe Execution as SYSTEM
 ![DC.exe SYSTEM-level execution](./screenshots/12b-dc-system-execution.png)
 
 **What this shows:** Process telemetry showing `DC.exe` executing as `NT AUTHORITY\SYSTEM` using the `/SYS 1` parameter, confirming elevated execution during the defense-impairment sequence.
-
 
 ---
 
@@ -390,7 +386,7 @@ The targeted applications included security, administrative, database, and backu
 **ATT&CK Mapping:**  
 Persistence — `T1546.012: Image File Execution Options Injection`
 
-### Screenshot Evidence
+###Process Interference - IFEO Debugger Registry Modifications
 
 ![Representative IFEO Debugger modifications](./screenshots/13-ifeo-debugger-modifications.png)
 
@@ -413,7 +409,7 @@ Impact — `T1490: Inhibit System Recovery`
 **Key finding:**  
 The ransomware attempted to interfere with resources that could support recovery or remain inaccessible during encryption.
 
-### Screenshot Evidence
+### Impact - Recovery and Virtual Machine Disruption Commands
 
 ![PowerShell recovery and VM disruption commands](./screenshots/14-recovery-vm-disruption.png)
 
@@ -443,7 +439,7 @@ However, the available telemetry did not provide sufficient file-write, rename, 
 **Conclusion:**  
 Ransomware activity was confirmed, but widespread file encryption was not conclusively demonstrated in the reviewed telemetry.
 
-### Screenshot Evidence
+### Impact Validation - File Telemetry Review for Encryption
 
 ![Nemesys impact investigation](./screenshots/15-impact-validation.png)
 
@@ -471,7 +467,7 @@ The search window was expanded beyond April 1 so the investigation did not depen
 **Conclusion:**  
 The strongest combination of credential access, ransomware execution, discovery, and defense impairment remained concentrated on `KCD-Web`. No definitive evidence of Nemesys propagation to additional hosts was identified.
 
-### Screenshot Evidence
+### Enterprise Scoping - Nemesys-Related Behavioral Indicators
 
 ![Enterprise scoping results](./screenshots/16-enterprise-scoping.png)
 
@@ -499,7 +495,7 @@ After validating the major pivots, the investigation reconstructed the activity:
 14. Impact investigated
 15. Environment scoped for additional compromise
 
-### Screenshot Evidence
+### Attack Timeline - Authentication Through Ransomware Activity
 
 ![Final Nemesys investigation timeline](./screenshots/17-final-timeline.png)
 
