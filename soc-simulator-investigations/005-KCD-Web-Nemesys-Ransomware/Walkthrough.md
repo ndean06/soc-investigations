@@ -24,7 +24,7 @@ Were files actually encrypted, and what process was responsible for the ransomwa
 
 ![Nemesys ransomware note displayed on KCD-Web](./screenshots/01-nemesys-ransom-note.png)
 
-**What this shows:** The user-facing ransomware message claiming that files on the system had been encrypted and demanding payment for decryption.
+*The user-facing ransomware message claiming that files on the system had been encrypted and demanding payment for decryption*
 
 ---
 
@@ -36,70 +36,58 @@ Based on the ransom note, the first technique considered was:
 |---|---|---|
 | Impact | Data Encrypted for Impact | T1486 |
 
-The ransom note strongly suggested `T1486: Data Encrypted for Impact`.
-
-However, the ransom note alone did not prove that widespread file encryption successfully occurred.
-
-For that reason, T1486 was initially treated as **suspected** rather than confirmed.
+The ransom note strongly suggested `T1486: Data Encrypted for Impact`.  However, the ransom note alone did not prove that widespread file encryption successfully occurred.  For that reason, T1486 was initially treated as **suspected** rather than confirmed.
 
 ### Investigation Pivot
 
 Because the investigation began near the end of the attack chain, the next step was to work backward.
 
-**Next question:**  
+#### Next question: 
 What process created or displayed the ransom note?
 
 ### ATT&CK Reference - Suspected Data Encrypted for Impact (T1486)
 
 ![MITRE ATT&CK reference for Data Encrypted for Impact](./screenshots/02-mitre-data-encrypted-impact.png)
 
-**What this shows:** The MITRE ATT&CK reference for `T1486: Data Encrypted for Impact`, which provided the initial behavioral starting point for the investigation.
+*The MITRE ATT&CK reference for `T1486: Data Encrypted for Impact`, which provided the initial behavioral starting point for the investigation.*
 
 ---
 
 ## 3. Ransom Note Process Review
 
-The investigation searched endpoint telemetry for: `Info_to_decrypt_nemesys.txt`
+The investigation searched endpoint telemetry for: `Info_to_decrypt_nemesys.txt`  At approximately `18:14:56 UTC`, `notepad.exe` opened: `C:\Info_to_decrypt_nemesys.txt` Suspicious `nemesys.exe` activity was observed during the same execution window.  This provided the first process-level pivot away from the ransom note.
 
-At approximately `18:14:56 UTC`, `notepad.exe` opened: `C:\Info_to_decrypt_nemesys.txt`
-
-Suspicious `nemesys.exe` activity was observed during the same execution window.  This provided the first process-level pivot away from the ransom note.
-
-**Key finding:**  
+#### Key finding:  
 `nemesys.exe` became the primary executable of interest.
 
 ### Process Correlation - Ransom Note and Nemesys Activity
 
 ![Process activity surrounding the Nemesys ransom note](./screenshots/03-ransom-note-process-review.png)
 
-**What this shows:** Endpoint telemetry showing `Info_to_decrypt_nemesys.txt` being opened during the `nemesys.exe` activity window.
+*Endpoint telemetry showing `Info_to_decrypt_nemesys.txt` being opened during the `nemesys.exe` activity window.*
 
 ---
 
 ## 4. Nemesys Execution Review
 
-The investigation pivoted to `nemesys.exe` to determine whether the executable was actually launched.
+The investigation pivoted to `nemesys.exe` to determine whether the executable was actually launched.  At approximately `18:14:42 UTC`, the following process relationship was identified: `explorer.exe -> nemesys.exe`  The executable was launched from: `C:\Users\receptionist\Videos\nemesys.exe` under: `KCD-Web\receptionist`
 
-At approximately `18:14:42 UTC`, the following process relationship was identified: `explorer.exe -> nemesys.exe`
-
-The executable was launched from: `C:\Users\receptionist\Videos\nemesys.exe` under: `KCD-Web\receptionist`
-
-**Key finding:**  
+#### Key finding:  
 `nemesys.exe` was executed within the receptionist user's interactive session.
 
 ### Execution - Nemesys Launched from the Receptionist Profile
 
 ![Nemesys execution from receptionist Videos directory](./screenshots/04-nemesys-execution.png)
 
-**What this shows:** Process creation telemetry showing `explorer.exe` launching `C:\Users\receptionist\Videos\nemesys.exe` at `18:14:42 UTC`. One second later, `nemesys.exe` launched an additional Nemesys-related executable from the `7ZipSfx.000` temporary directory, providing the next pivot into the ransomware execution chain.
+*Process creation telemetry showing `explorer.exe` launching `C:\Users\receptionist\Videos\nemesys.exe` at `18:14:42 UTC`. One second later, `nemesys.exe` launched an additional Nemesys-related executable from the `7ZipSfx.000` temporary directory, providing the next pivot into the ransomware execution chain.*
 
 ### Execution Chain - Payload Extraction and Follow-On Processes
 
 ![First observed Nemesys execution and follow-on process activity](./screenshots/04a-nemesys-execution-chain.png)
 
-**What this shows:** The earliest observed Sysmon process creation event for `nemesys.exe` at `18:14:42 UTC`, followed by the immediate execution chain involving the extracted Nemesys payload, `7za.exe`, staged AppData copies of `nemesys.exe`, `Everything.exe`, `DC.exe`, PowerShell, and command-shell activity. This broader view shows how quickly the ransomware transitioned from initial execution into payload extraction, staging, discovery, and defense-impairment activity.
+*The earliest observed Sysmon process creation event for `nemesys.exe` at `18:14:42 UTC`, followed by the immediate execution chain involving the extracted Nemesys payload, `7za.exe`, staged AppData copies of `nemesys.exe`, `Everything.exe`, `DC.exe`, PowerShell, and command-shell activity. This broader view shows how quickly the ransomware transitioned from initial execution into payload extraction, staging, discovery, and defense-impairment activity.*
 
-**Next pivot:**  
+#### Next pivot:  
 What happened before `18:14:42 UTC` that could explain how the ransomware was staged or what attacker activity preceded execution?
 
 ---
@@ -126,25 +114,23 @@ The directory contained credential-access tooling including:
 
 This significantly expanded the investigation beyond ransomware execution.
 
-**Key finding:**  
+#### Key finding:  
 Credential-access activity preceded `nemesys.exe` execution and provided the next major investigation pivot.
 
 ### Credential Access - Mimikatz Activity Before Ransomware Execution
 
 ![Credential access activity preceding Nemesys execution](./screenshots/05-pre-execution-credential-activity.png)
 
-**What this shows:** Endpoint telemetry showing Mimikatz execution from the `automim1` directory at `18:12:53 UTC`, followed by `miparser.vbs` processing the resulting credential output at `18:13:08 UTC`. Both occurred before the first observed Nemesys execution at `18:14:42 UTC`.
+*Endpoint telemetry showing Mimikatz execution from the `automim1` directory at `18:12:53 UTC`, followed by `miparser.vbs` processing the resulting credential output at `18:13:08 UTC`. Both occurred before the first observed Nemesys execution at `18:14:42 UTC`.*
 
-**Next question:**  
+#### Next question:  
 What was Mimikatz attempting to access, and was credential dumping actually performed?
 
 ---
 
 ## 6. Mimikatz Execution Review
 
-Finding Mimikatz on disk did not prove it had been executed.
-
-The investigation therefore searched for process creation involving `mimikatz.exe`.
+Finding Mimikatz on disk did not prove it had been executed.  The investigation therefore searched for process creation involving `mimikatz.exe`.
 
 At `18:12:53 UTC`, Mimikatz executed with:
 
@@ -164,14 +150,14 @@ Output was written to:
 Credential Access — `T1003.001: OS Credential Dumping: LSASS Memory`  
 Credential Access — `T1003.002: OS Credential Dumping: Security Account Manager`
 
-**Key finding:**  
+#### Key finding: 
 Credential dumping was confirmed rather than merely attempted through tool staging.
 
 ### Credential Access - Mimikatz LSASS and SAM Dumping
 
 ![Mimikatz credential dumping command line](./screenshots/06-mimikatz-credential-dumping.png)
 
-**What this shows:** Sysmon process creation telemetry showing Mimikatz executing `privilege::debug`, `sekurlsa::logonPasswords`, `token::elevate`, and `lsadump::sam`.
+*Sysmon process creation telemetry showing Mimikatz executing `privilege::debug`, `sekurlsa::logonPasswords`, `token::elevate`, and `lsadump::sam`.*
 
 ---
 
@@ -191,7 +177,7 @@ Shortly afterward:
 
 The files were viewed using `notepad.exe`.
 
-**Key finding:**  
+#### Key finding:  
 Credential information was not only dumped but subsequently parsed and reviewed.
 
 ### Credential Access - Credential Output Parsing and Review
@@ -222,20 +208,20 @@ This activity occurred approximately three minutes before Mimikatz credential du
 Initial Access — `T1133: External Remote Services`  
 Initial Access — `T1078: Valid Accounts`
 
-**Key finding:**  
+#### Key finding:
 Successful external authentication and RDP-related session activity involving the `receptionist` account from `141[.]98[.]83[.]86` immediately preceded credential dumping and ransomware execution, strongly supporting this IP as the attacker access path.
 
 ### Authentication Scoping - Failed and Successful Logons
 
 ![Suspicious external access to KCD-Web](./screenshots/08-suspicious-authentication.png)
 
-**What this shows:** Windows authentication telemetry showing successful `receptionist` logons from external IP `141[.]98[.]83[.]86`, followed by RDP-related session activity shortly before Mimikatz credential dumping and Nemesys ransomware execution.
+*Windows authentication telemetry showing successful `receptionist` logons from external IP `141[.]98[.]83[.]86`, followed by RDP-related session activity shortly before Mimikatz credential dumping and Nemesys ransomware execution.*
 
 ### Additional Authentication Scoping Evidence
 
 ![High-volume failed and successful authentication activity](./screenshots/08a-auth-failures-and-success-summary.png)
 
-**What this shows:** Authentication scoping identified a high volume of failed logons from `146.70.181.38`, along with `4624` successful logon activity from the same source IP. This pattern is suspicious and may be consistent with password spraying or brute-force behavior.
+*Authentication scoping identified a high volume of failed logons from `146.70.181.38`, along with `4624` successful logon activity from the same source IP. This pattern is suspicious and may be consistent with password spraying or brute-force behavior*
 
 ---
 
@@ -257,14 +243,14 @@ Notable files included:
 - `DC.exe`
 - `Everything.exe`
 
-**Key finding:**  
+#### Key finding:  
 Nemesys extracted and staged supporting components within a randomly named AppData working directory.
 
 ### Payload Staging - 7-Zip Extraction and AppData Components
 
 ![Nemesys payload extraction and staging](./screenshots/09-nemesys-payload-staging.png)
 
-**What this shows:** Process and file telemetry showing `7za.exe` extraction and ransomware components staged within the AppData working directory.
+*Process and file telemetry showing `7za.exe` extraction and ransomware components staged within the AppData working directory.*
 
 ---
 
@@ -285,16 +271,14 @@ This provided a mechanism for the ransomware to execute again when the affected 
 **ATT&CK Mapping:**  
 Persistence — `T1547.001: Registry Run Keys / Startup Folder`
 
-**Key finding:**  
+#### Key finding:
 The Nemesys ransomware chain established user-level Run key persistence pointing back to the staged AppData copy of `nemesys.exe`.
 
 ### Persistence - Registry Run Key (T1547.001)
 
 ![Nemesys Registry Run persistence](./screenshots/10-nemesys-run-persistence.png)
 
-**What this shows:** Sysmon registry telemetry showing a Nemesys-related payload creating the `CurrentVersion\Run\nemesys` value at `18:14:44 UTC`. The value data points to the staged `nemesys.exe` within the randomly named AppData working directory, confirming persistence through user logon.
-
----
+*Sysmon registry telemetry showing a Nemesys-related payload creating the `CurrentVersion\Run\nemesys` value at `18:14:44 UTC`. The value data points to the staged `nemesys.exe` within the randomly named AppData working directory, confirming persistence through user logon.*
 
 ---
 
@@ -304,19 +288,16 @@ Nemesys launched:
 
 `Everything.exe -startup`
 
-Everything is capable of rapidly indexing files and directories on Windows systems.
-
-Within the context of the ransomware execution chain, this activity was consistent with file discovery before impact activity.
+Everything is capable of rapidly indexing files and directories on Windows systems.  Within the context of the ransomware execution chain, this activity was consistent with file discovery before impact activity.
 
 **ATT&CK Mapping:**  
 Discovery — `T1083: File and Directory Discovery`
 
 ### Discovery - File and Directory Discovery (T1083)
 
-
 ![Everything.exe file discovery activity](./screenshots/11-everything-file-discovery.png)
 
-**What this shows:** Process telemetry showing Nemesys launching `Everything.exe -startup` from the ransomware staging directory.
+*Process telemetry showing Nemesys launching `Everything.exe -startup` from the ransomware staging directory.*
 
 ---
 
@@ -347,7 +328,7 @@ This showed that the defense-impairment activity continued under an elevated SYS
 **ATT&CK Mapping:**  
 Defense Impairment — `T1562.001: Impair Defenses`
 
-**Key finding:**  
+#### Key finding:  
 The Nemesys toolchain modified Microsoft Defender policy settings and later executed `DC.exe` under SYSTEM privileges, confirming deliberate defense-impairment activity.
 
 
@@ -355,13 +336,13 @@ The Nemesys toolchain modified Microsoft Defender policy settings and later exec
 
 ![DC.exe Defender policy modification](./screenshots/12a-defender-policy-modification.png)
 
-**What this shows:** Registry telemetry showing `DC.exe` modifying the Microsoft Defender `DisableAntiSpyware` policy and setting the value to `DWORD 1`, supporting deliberate impairment of endpoint security protections.
+*Registry telemetry showing `DC.exe` modifying the Microsoft Defender `DisableAntiSpyware` policy and setting the value to `DWORD 1`, supporting deliberate impairment of endpoint security protections*
 
 
 ### Defense Impairment - DC.exe Execution as SYSTEM
 ![DC.exe SYSTEM-level execution](./screenshots/12b-dc-system-execution.png)
 
-**What this shows:** Process telemetry showing `DC.exe` executing as `NT AUTHORITY\SYSTEM` using the `/SYS 1` parameter, confirming elevated execution during the defense-impairment sequence.
+*Process telemetry showing `DC.exe` executing as `NT AUTHORITY\SYSTEM` using the `/SYS 1` parameter, confirming elevated execution during the defense-impairment sequence.*
 
 ---
 
@@ -388,7 +369,8 @@ Persistence — `T1546.012: Image File Execution Options Injection`
 
 ![Representative IFEO Debugger modifications](./screenshots/13-ifeo-debugger-modifications.png)
 
-**What this shows:** Representative IFEO `Debugger` registry modifications targeting security monitoring, administrative, database, and backup-related executables. The targeted processes were redirected to `C:\Windows\System32\Systray.exe`. A total of 84 IFEO-related process targets were identified during the ransomware activity.
+*Representative IFEO `Debugger` registry modifications targeting security monitoring, administrative, database, and backup-related executables. The targeted processes were redirected to `C:\Windows\System32\Systray.exe`. A total of 84 IFEO-related process targets were identified during the ransomware activity.*
+
 ---
 
 ## 14. Recovery and VM Disruption Review
@@ -404,14 +386,14 @@ VSS-related configuration changes were also identified.
 **ATT&CK Mapping:**  
 Impact — `T1490: Inhibit System Recovery`
 
-**Key finding:**  
+#### Key finding:  
 The ransomware attempted to interfere with resources that could support recovery or remain inaccessible during encryption.
 
 ### Impact - Recovery and Virtual Machine Disruption Commands
 
 ![PowerShell recovery and VM disruption commands](./screenshots/14-recovery-vm-disruption.png)
 
-**What this shows:** PowerShell activity launched during the Nemesys execution chain to dismount disk images and stop virtual machines.
+*PowerShell activity launched during the Nemesys execution chain to dismount disk images and stop virtual machines.*
 
 ---
 
@@ -430,9 +412,7 @@ Endpoint telemetry was reviewed for:
 - High-volume writes from `nemesys.exe`
 - Activity within user and shared directories
 
-The ransom note and ransomware execution were confirmed.
-
-However, the available telemetry did not provide sufficient file-write, rename, or extension-change evidence to conclusively demonstrate widespread encryption.
+The ransom note and ransomware execution were confirmed.  However, the available telemetry did not provide sufficient file-write, rename, or extension-change evidence to conclusively demonstrate widespread encryption.
 
 **Conclusion:**  
 Ransomware activity was confirmed, but widespread file encryption was not conclusively demonstrated in the reviewed telemetry.
@@ -441,7 +421,7 @@ Ransomware activity was confirmed, but widespread file encryption was not conclu
 
 ![Nemesys impact investigation](./screenshots/15-impact-validation.png)
 
-**What this shows:** Endpoint file telemetry reviewed to determine whether widespread encryption could be independently confirmed.
+*Endpoint file telemetry reviewed to determine whether widespread encryption could be independently confirmed.*
 
 ---
 
@@ -469,7 +449,7 @@ The strongest combination of credential access, ransomware execution, discovery,
 
 ![Enterprise scoping results](./screenshots/16-enterprise-scoping.png)
 
-**What this shows:** Environment-wide behavioral scoping used to determine whether the Nemesys toolchain appeared on additional endpoints.
+*Environment-wide behavioral scoping used to determine whether the Nemesys toolchain appeared on additional endpoints.*
 
 ---
 
@@ -497,7 +477,7 @@ After validating the major pivots, the investigation reconstructed the activity:
 
 ![Final Nemesys investigation timeline](./screenshots/17-final-timeline.png)
 
-**What this shows:** The reconstructed attack sequence from suspected initial access through credential dumping, ransomware execution, defense impairment, and impact.
+*The reconstructed attack sequence from suspected initial access through credential dumping, ransomware execution, defense impairment, and impact.*
 
 ---
 
