@@ -95,7 +95,7 @@ The executable was launched from: `C:\Users\receptionist\Videos\nemesys.exe` und
 
 **What this shows:** Process creation telemetry showing `explorer.exe` launching `C:\Users\receptionist\Videos\nemesys.exe` at `18:14:42 UTC`. One second later, `nemesys.exe` launched an additional Nemesys-related executable from the `7ZipSfx.000` temporary directory, providing the next pivot into the ransomware execution chain.
 
-### Additional Execution Chain Evidence
+### Execution Chain - Payload Extraction and Follow-On Processes
 
 ![First observed Nemesys execution and follow-on process activity](./screenshots/04a-nemesys-execution-chain.png)
 
